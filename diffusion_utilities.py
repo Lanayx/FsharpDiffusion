@@ -41,6 +41,7 @@ class ResidualConvBlock(nn.Module):
 
         # If using residual connection
         if self.is_res:
+
             # Apply first convolutional layer
             x1 = self.conv1(x)
 
@@ -52,9 +53,13 @@ class ResidualConvBlock(nn.Module):
                 out = x + x2
             else:
                 # If not, apply a 1x1 convolutional layer to match dimensions before adding residual connection
-                shortcut = nn.Conv2d(x.shape[1], x2.shape[1], kernel_size=1, stride=1, padding=0).to(x.device)
+                shortcut = nn.Conv2d(x.shape[1], x2.shape[1], kernel_size=1, stride=1, padding=0, device=x.device)
+                # shWeights = shortcut.state_dict()['weight'][0]
+                # print(f'shortcut= {shWeights}', end='\r\n')
                 out = shortcut(x) + x2
             #print(f"resconv forward: x {x.shape}, x1 {x1.shape}, x2 {x2.shape}, out {out.shape}")
+
+            
 
             # Normalize output tensor
             return out / 1.414

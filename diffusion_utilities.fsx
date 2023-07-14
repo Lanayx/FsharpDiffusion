@@ -24,7 +24,7 @@ type ResidualConvBlock(in_channels: int64, out_channels: int64, is_res: bool, t_
 
     // First convolutional layer
     let conv1 = nn.Sequential(
-        nn.Conv2d(in_channels, out_channels, 3L, stride = 1L, padding = 1L, device = t_device),   // 3x3 kernel with stride 1 and padding 1
+        nn.Conv2d(in_channels, out_channels, 3, 1, 1, device = t_device),   // 3x3 kernel with stride 1 and padding 1
         nn.BatchNorm2d(out_channels, device = t_device),   // Batch normalization
         nn.GELU()  // GELU activation function
     )
@@ -53,8 +53,11 @@ type ResidualConvBlock(in_channels: int64, out_channels: int64, is_res: bool, t_
                 else
                     // If not, apply a 1x1 convolutional layer to match dimensions before adding residual connection
                     let shortcut = nn.Conv2d(x.shape[1], x2.shape[1], kernelSize = 1L, stride=1L, padding=0L, device = t_device)
+                    // let weightTensor = shortcut.state_dict()["weight"]
+                    // printfn "shortcut: %A" (weightTensor[0].ToDisplayString())
                     shortcut.forward(x) + x2
             // print(f"resconv forward: x {x.shape}, x1 {x1.shape}, x2 {x2.shape}, out {out.shape}")
+
          
             // Normalize output tensor
             out / 1.414.ToTensor(t_device)
@@ -141,9 +144,9 @@ let unorm(x: Tensor) =
 let norm_all(store: Tensor, n_t, n_s) =
     // runs unity norm on all timesteps of all samples
     let nstore = zeros_like(store)
-    for t in 1L..n_t do
-        for s in 1L..n_s do
-            nstore[t-1L,s-1L] <- unorm(store[t-1L,s-1L])
+    for t in 0L..(n_t-1L) do
+        for s in 0L..(n_s-1L) do
+            nstore[t,s] <- unorm(store[t,s])
     nstore
 
 let drawImage (image: Tensor) =
